@@ -1,0 +1,7 @@
+.env
+.streamlit/secrets.toml
+.venv/
+__pycache__/
+*.pyc
+prospection_sirene.csv
+prospection_sirene.xlsx

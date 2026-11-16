@@ -48,7 +48,7 @@ L'interface s'ouvre sur <http://localhost:8501>.
 
 1. Dans la barre latérale, décrivez votre client idéal :
    - **Secteur** : grande section NAF (A à U) et/ou codes NAF précis (avec option « sous-codes ») ;
-   - **Zone** : un ou plusieurs codes postaux ou codes communes INSEE ;
+   - **Zone** : un ou plusieurs départements (liste complète avec leurs noms), codes postaux ou codes communes INSEE ;
    - **Taille** : tranches d'effectif salarié (de « non employeur » à « 10 000 salariés et plus ») ;
    - **Filtres** : établissements actifs uniquement, création après une date, dénomination.
 2. Vérifiez la **requête générée** (syntaxe officielle de l'API Sirene).
@@ -68,6 +68,9 @@ constants.py      Nomenclatures INSEE (tranches d'effectif, sections NAF, exempl
 
 - Endpoint utilisé : `GET https://api.insee.fr/api-sirene/3.11/siret` (recherche par critères,
   1 000 résultats max par page, pagination automatique).
+- Le filtre département utilise la syntaxe officielle de l'API : `codeCommuneEtablissement:69*`
+  (les codes communes INSEE commencent toujours par le numéro de département, y compris
+  2A/2B pour la Corse et 971–976 pour l'outre-mer).
 - Les erreurs courantes sont explicitées dans l'interface : clé invalide (401),
   erreur de syntaxe de requête (400), quota atteint (429).
 - Les données proviennent du répertoire Sirene géré par l'INSEE ; les tranches d'effectif

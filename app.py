@@ -13,7 +13,7 @@ import pandas as pd
 import requests
 import streamlit as st
 
-from constants import EXEMPLES_NAF, SECTIONS_NAF, TRANCHES_EFFECTIFS
+from constants import DEPARTEMENTS, EXEMPLES_NAF, SECTIONS_NAF, TRANCHES_EFFECTIFS
 from sirene_client import SireneClient, SireneError, echapper_valeur
 
 st.set_page_config(page_title="Prospection Sirene", page_icon="🎯", layout="wide")
@@ -39,6 +39,7 @@ def construire_requete(
             conditions.append(f"{champ}:({' OR '.join(codes)})")
     if type_geo and valeurs_geo:
         champ_geo = {
+            "Département(s)": "codeCommuneEtablissement",
             "Code postal": "codePostalEtablissement",
             "Code commune (INSEE)": "codeCommuneEtablissement",
         }[type_geo]
@@ -103,12 +104,22 @@ with st.sidebar:
     st.subheader("Zone géographique")
     type_geo = st.selectbox(
         "Type de zone",
-        ["Aucune", "Code postal", "Code commune (INSEE)"],
+        ["Aucune", "Département(s)", "Code postal", "Code commune (INSEE)"],
     )
-    geo_saisi = st.text_input(
-        "Valeurs (séparées par des virgules)",
-        placeholder="ex. 75011, 75012 ou 69123, 38185",
-    )
+    if type_geo == "Département(s)":
+        departements_labels = {f"{c} — {n}": c for c, n in sorted(DEPARTEMENTS.items())}
+        departements_choisis = st.multiselect(
+            "Départements",
+            list(departements_labels),
+            default=[],
+            help="Sélectionnez un ou plusieurs départements. Vous pouvez en combiner autant que vous voulez.",
+        )
+        geo_saisi = ", ".join(departements_labels[d] for d in departements_choisis)
+    else:
+        geo_saisi = st.text_input(
+            "Valeurs (séparées par des virgules)",
+            placeholder="ex. 75011, 75012 ou 69123, 38185",
+        )
 
     st.subheader("Taille (effectif salarié)")
     tranches_labels = {f"{c} — {l}": c for c, l in TRANCHES_EFFECTIFS.items()}
@@ -141,6 +152,9 @@ codes_naf = [c.strip().upper() for c in naf_saisi.replace(" ", "").split(",") if
 if section != "—" and not codes_naf:
     codes_naf = [section.split(" — ")[0]]
 valeurs_geo = [v.strip() for v in geo_saisi.replace(" ", "").split(",") if v.strip()]
+if type_geo == "Département(s)":
+    # Les codes communes INSEE commencent par le numéro de département
+    valeurs_geo = [v + "*" for v in valeurs_geo]
 tranches = [tranches_labels[t] for t in tranches_choisies]
 type_geo_effectif = None if type_geo == "Aucune" else type_geo
 
